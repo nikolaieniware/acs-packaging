@@ -21,11 +21,12 @@ if [[ $(isPullRequestBuild) && ( "${COM_DEPENDENCY_VERSION}" =~ ^.+-SNAPSHOT$ ||
   exit 1
 fi
 
-# Prevent release jobs from starting when there are SNAPSHOT upstream dependencies
-if [[ "${COM_DEPENDENCY_VERSION}" =~ ^.+-SNAPSHOT$ || "${ENT_DEPENDENCY_VERSION}" =~ ^.+-SNAPSHOT$ ]] && [ "${TRAVIS_BUILD_STAGE_NAME,,}" = "release" ] ; then
-  printf "Cannot release project with SNAPSHOT dependencies!\n"
-  exit 1
-fi
+# TODO remove comment - doing a dev release
+## Prevent release jobs from starting when there are SNAPSHOT upstream dependencies
+#if [[ "${COM_DEPENDENCY_VERSION}" =~ ^.+-SNAPSHOT$ || "${ENT_DEPENDENCY_VERSION}" =~ ^.+-SNAPSHOT$ ]] && [ "${TRAVIS_BUILD_STAGE_NAME,,}" = "release" ] ; then
+#  printf "Cannot release project with SNAPSHOT dependencies!\n"
+#  exit 1
+#fi
 
 COM_UPSTREAM_REPO="github.com/Alfresco/alfresco-community-repo.git"
 
