@@ -23,6 +23,7 @@ branches:
     - /release\/.*/
     - /feature\/.*/
     - /fix\/.*/
+    - ACS-1059
 
 env:
   global:
