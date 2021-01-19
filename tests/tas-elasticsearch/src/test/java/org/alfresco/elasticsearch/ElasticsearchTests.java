@@ -171,7 +171,7 @@ public class ElasticsearchTests extends AbstractTestNGSpringContextTests
         Utility.sleep(1000, 10000, () -> {
             SearchRequest query = new SearchRequest();
             RestRequestQueryModel queryReq = new RestRequestQueryModel();
-            queryReq.setQuery("This");
+            queryReq.setQuery("this");
             query.setQuery(queryReq);
 
             SearchResponse search = client.authenticateUser(userSite1).withSearchAPI().search(query);
@@ -183,13 +183,13 @@ public class ElasticsearchTests extends AbstractTestNGSpringContextTests
 
     @TestRail(section = {
             TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION, description = "Verify that Elasticsearch search works as expected when the user can search a file because he is the owenr.")
-    @Test(groups = { TestGroup.SEARCH })
+    @Test(groups = { TestGroup.SEARCH }, enabled = false)
     public void searchCanFindAFileOnMultipleSites() throws Exception
     {
         Utility.sleep(1000, 10000, () -> {
             SearchRequest query = new SearchRequest();
             RestRequestQueryModel queryReq = new RestRequestQueryModel();
-            queryReq.setQuery("This");
+            queryReq.setQuery("this");
             query.setQuery(queryReq);
 
             SearchResponse search = client.authenticateUser(userSite2).withSearchAPI().search(query);
@@ -208,7 +208,7 @@ public class ElasticsearchTests extends AbstractTestNGSpringContextTests
         Utility.sleep(1000, 10000, () -> {
             SearchRequest query = new SearchRequest();
             RestRequestQueryModel queryReq = new RestRequestQueryModel();
-            queryReq.setQuery("This");
+            queryReq.setQuery("this");
             query.setQuery(queryReq);
 
             SearchResponse search = client.authenticateUser(userMultiSite).withSearchAPI().search(query);
