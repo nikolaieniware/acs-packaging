@@ -15,14 +15,12 @@ import org.alfresco.utility.network.ServerHealth;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.http.HttpHost;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.CreateIndexRequest;
-import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
@@ -37,6 +35,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.INDEX_NAME;
+import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -47,7 +47,6 @@ import static org.testng.Assert.assertTrue;
  */ 
 public class ElasticsearchTests extends AbstractTestNGSpringContextTests
 {
-    private static final String INDEX_NAME = "alfresco";
     private static final String FILE_0_NAME = "test.txt";
     private static final String FILE_1_NAME = "another.txt";
     private static final String FILE_2_NAME = "user1.txt";
@@ -87,7 +86,7 @@ public class ElasticsearchTests extends AbstractTestNGSpringContextTests
      *  
      */
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation()
+    public void dataPreparation() throws IOException
     {
         serverHealth.assertServerIsOnline();
 
@@ -114,7 +113,8 @@ public class ElasticsearchTests extends AbstractTestNGSpringContextTests
     }
     
     @AfterClass(alwaysRun=true)
-    public void cleanup(){
+    public void cleanup() throws IOException
+    {
         deleteIndex(INDEX_NAME);
         dataSite.deleteSite(siteModel1);
         dataSite.deleteSite(siteModel2);
@@ -134,7 +134,7 @@ public class ElasticsearchTests extends AbstractTestNGSpringContextTests
             GetResponse documentResponse = elasticClient.get(request, RequestOptions.DEFAULT);
 
             assertTrue(documentResponse.isExists());
-            assertEquals(documentResponse.getSource().get("content"), "This is a test");
+            assertEquals(documentResponse.getSource().get("cm%3Acontent"), "This is a test");
         });
     }
 
@@ -217,52 +217,15 @@ public class ElasticsearchTests extends AbstractTestNGSpringContextTests
                        .createContent(new FileModel(filename, FileType.TEXT_PLAIN, content));
     }
 
-    private void initIndex()
+    private void initIndex() throws IOException
     {
-        if (existsIndex(INDEX_NAME))
-        {
-            deleteIndex(INDEX_NAME);
-        }
-        createIndex(INDEX_NAME);
+        deleteIndex(INDEX_NAME);
     }
 
-    private boolean deleteIndex(String indexName)
+    private void deleteIndex(String indexName) throws IOException
     {
-        DeleteIndexRequest request = new DeleteIndexRequest(indexName);
-        try
-        {
-            return elasticClient.indices().delete(request, RequestOptions.DEFAULT).isAcknowledged();
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private boolean existsIndex(String indexName)
-    {
-        GetIndexRequest request = new GetIndexRequest(indexName);
-        try
-        {
-            return elasticClient.indices().exists(request, RequestOptions.DEFAULT);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private boolean createIndex(String indexName)
-    {
-        CreateIndexRequest request = new CreateIndexRequest(indexName);
-        try
-        {
-            return elasticClient.indices().create(request, RequestOptions.DEFAULT).isAcknowledged();
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+        DeleteByQueryRequest indexEmptier = new DeleteByQueryRequest(indexName).setQuery(matchAllQuery());
+        elasticClient.deleteByQuery(indexEmptier, RequestOptions.DEFAULT);
     }
 
     public <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2)
