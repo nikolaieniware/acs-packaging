@@ -30,7 +30,7 @@ env:
     - TAS_SCRIPTS=../alfresco-community-repo/packaging/tests/scripts
     - TAS_ENVIRONMENT=./tests/environment
     # Release version has to start with real version (7.0.0-....) for the docker image to build successfully.
-    - RELEASE_VERSION=7.0.0-A21
+    - RELEASE_VERSION=7.0.0-A22
     - DEVELOPMENT_VERSION=7.0.0-SNAPSHOT
 
 stages:
@@ -39,7 +39,7 @@ stages:
   - name: docker_latest
     if: fork = false AND type != pull_request AND (branch = master OR branch =~ /release\/.*/)
   - name: release
-    if: commit_message =~ /\[release\]/ AND fork = false AND type != pull_request AND (branch = master OR branch =~ /release\/.*/ OR branch = feature/REPO-5111_repo_build)
+    if: commit_message =~ /\[release\]/ AND fork = false AND type != pull_request AND (branch = master OR branch =~ /release\/.*/)
   - name: publish
     if: commit_message =~ /\[publish\]/ AND fork = false AND type != pull_request AND (branch = master OR branch =~ /release\/.*/)
 
@@ -213,7 +213,9 @@ jobs:
           secret_access_key: "${AWS_STAGING_SECRET_KEY}"
           bucket: "alfresco-artefacts-staging"
           region: "eu-west-1"
-          cleanup: false
+          # Once Travis releases their *dpl v2* api (currently in beta, check https://docs.travis-ci.com/user/deployment-v2#how-to-opt-in-to-v2)
+          # the skip_cleanup option will no longer be needed (or valid) and should be removed (ACS-1155).
+          skip_cleanup: true
           acl: private
           local_dir: "deploy_dir"
           upload_dir: "alfresco-content-services/release/${TRAVIS_BRANCH}/${TRAVIS_BUILD_NUMBER}"
