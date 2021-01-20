@@ -98,6 +98,7 @@ public class ElasticsearchTests extends AbstractTestNGSpringContextTests
 
         elasticClient = new RestHighLevelClient(RestClient.builder(new HttpHost("localhost", 9200, "http")));
         initIndex();
+        emptyIndex(INDEX_NAME);
 
         userSite1 = dataUser.createRandomTestUser();
         userSite2 = dataUser.createRandomTestUser();
@@ -121,7 +122,7 @@ public class ElasticsearchTests extends AbstractTestNGSpringContextTests
     @AfterClass(alwaysRun=true)
     public void cleanup() throws IOException
     {
-        deleteIndex(INDEX_NAME);
+        emptyIndex(INDEX_NAME);
         dataSite.deleteSite(siteModel1);
         dataSite.deleteSite(siteModel2);
         dataUser.deleteUser(userSite1);
@@ -249,10 +250,9 @@ public class ElasticsearchTests extends AbstractTestNGSpringContextTests
         elasticClient
                 .indices() 
                 .putMapping(putMappingRequest, RequestOptions.DEFAULT);
-        deleteIndex(INDEX_NAME);
     }
 
-    private void deleteIndex(String indexName) throws IOException
+    private void emptyIndex(String indexName) throws IOException
     {
         DeleteByQueryRequest indexEmptier = new DeleteByQueryRequest(indexName).setQuery(matchAllQuery());
         elasticClient.deleteByQuery(indexEmptier, RequestOptions.DEFAULT);
